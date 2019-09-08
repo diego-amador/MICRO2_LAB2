@@ -61,40 +61,28 @@
 //#define EMS_SHIFT 0b00000111 // Cursor Incremenr, Shift, 40 us
 //#define C_2LINE 0b11000000 // Cursor to Second Line, 40 us
 //#define SET_CURSOR 0b00010000 // Display OFF, Cursor ON, Blink OFF, 40 us
-#define DISPLAY_ON 0x0E // Display ON, Cursor On, Cursor Blink On, 40us
-#define CURSOR_ON 0x0A
-#define CURSOR_OFF 0x00
-#define DISPLAY_OFF 0x08 // Display OFF, Cursor OFF, Cursor Blink OFF, 40 us
+#define DISPLAY_ON 0x0F // Display ON, Cursor On, Cursor Blink On, 40us
+#define DISPLAY_OFF 0x0B // Display OFF, Cursor OFF, Cursor Blink OFF, 40 us
 #define CLEAR_DISPLAY 0x01 // Clear Display 1.53 ms
 #define FUNCTION_SET 0x38 // Function Set: 8-bit mode, 2-lines, 5x8 Grid, 40us
-#define EMS_NOSHIFT 0x06 // Cursor Increment, No Shift, 40 us
+#define EMS 0x06 // Cursor Increment, No Shift, 40 us
 #define EMS_SHIFT 0x07 // Cursor Incremenr, Shift, 40 us
-#define C_2LINE 0b11000000 // Cursor to Second Line, 40 us
-#define SET_CURSOR 0b00010000 // Display OFF, Cursor ON, Blink OFF, 40 us
+#define C_2LINE 0x40// Cursor to Second Line, 40 us
+#define SET_CURSOR 0b10000000 // Display OFF, Cursor ON, Blink OFF, 40 us
+#define HOME 0b00000010
 #define LOW (0)
 #define HIGH (1)
 
 
-/*
- * Write Operation Timing
- *
- * RS, RW, E = 0
- * RS, RW, E = 1
- * delay 25 ns
- * write data / send command
- * delay 40 ns
- * RS, RW, E = 0
- * delay 25 ns
- * delay 10 ns
-*/
-
-
 void blink();
+void PushButton();
+void LCD();
 void enable();
 void LCD_init();
-void write_char(unsigned char *byte);
+void write_char(uint8_t chars[]);
 void send_command(uint8_t hex);
-void init_pins();
+void write(uint8_t byte);
+void PinConfig();
 
 /*
  *  ======== mainThread ========
@@ -103,20 +91,24 @@ void *mainThread(void *arg0)
 {
     /* Call driver init functions */
     GPIO_init();
-    init_pins();
+    GPIO_setConfig(Board_GPIO_BUTTON1, GPIO_CFG_IN_PD | GPIO_CFG_IN_INT_RISING);
 
-    LCD_init();
+    while(1)
+    {
+        volatile int pressed;
+        pressed = GPIO_read(Board_GPIO_BUTTON1);
+        printf("%d\n", pressed);
+    }
+//    blink();
+//    PushButton();
+//    LCD();
 
-    write_char("A");
 
-//    write_char("Hello World!");
-
-    /* Initialization of LCD 16x2 Display */
     return 0;
 
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////   Lab#2: Experiment 1 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 void blink()
@@ -125,20 +117,61 @@ void blink()
     uint32_t time = 1;
 
     /* Configure the LED pin */
-    GPIO_setConfig(Board_GPIO_LED0, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
+    GPIO_setConfig(Board_GPIO_LED0, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_STR_HIGH);
 
     /* Turn on user LED */
-    GPIO_write(Board_GPIO_LED0, Board_GPIO_LED_ON);
+    GPIO_write(Board_GPIO_LED0, HIGH);
 
     while (1) {
         sleep(time);
-        GPIO_write(Board_GPIO_LED0, Board_GPIO_LED_OFF);
+        GPIO_write(Board_GPIO_LED0, LOW);
         sleep(time);
-        GPIO_write(Board_GPIO_LED0, Board_GPIO_LED_ON);
+        GPIO_write(Board_GPIO_LED0, HIGH);
     }
 }
 
-void init_pins()
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////   Lab#2: Experiment 2 ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+void PushButton()
+{
+    while(1)
+    {
+
+        while (GPIO_read(Board_GPIO_BUTTON0) == 0)
+        {
+
+            GPIO_write(Board_GPIO_LED0, HIGH);
+
+        }
+
+        GPIO_write(Board_GPIO_LED0, LOW);
+
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////   Lab#2: Experiment 3 ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+void LCD()
+{
+    PinConfig();
+    LCD_init();
+
+    write_char("FUCK THIS");
+
+    usleep(50);
+    send_command(HOME);
+    usleep(50);
+    send_command(SET_CURSOR | C_2LINE);
+    usleep(50);
+
+    write_char("Christian Diego");
+}
+
+
+
+void PinConfig()
 {
     /* Configures the pins as output */
     /* Data Pins */
@@ -150,161 +183,97 @@ void init_pins()
     GPIO_setConfig(GPIO_P21_D5, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
     GPIO_setConfig(GPIO_P55_D6, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
     GPIO_setConfig(GPIO_P15_D7, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
+
     /* Control Pins */
     GPIO_setConfig(GPIO_P02_E, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
     GPIO_setConfig(GPIO_P62_RS, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
-    GPIO_setConfig(GPIO_P01_RW, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
-
-    /* Writes a LOW to all pins */
-    GPIO_write(GPIO_P18_D0, LOW);
-    GPIO_write(GPIO_P08_D1, LOW);
-    GPIO_write(GPIO_P45_D2, LOW);
-    GPIO_write(GPIO_P07_D3, LOW);
-    GPIO_write(GPIO_P06_D4, LOW);
-    GPIO_write(GPIO_P21_D5, LOW);
-    GPIO_write(GPIO_P55_D6, LOW);
-    GPIO_write(GPIO_P15_D7, LOW);
-
-    GPIO_write(GPIO_P02_E, LOW);
-    GPIO_write(GPIO_P62_RS, LOW);
-    GPIO_write(GPIO_P01_RW, LOW);
 
 }
 
-void enable()
-{
-    GPIO_toggle(GPIO_P02_E);
-    usleep(10000);
-    GPIO_toggle(GPIO_P02_E);
-}
-
-void check_busy()
-{
-    uint8_t busy_flag;
-
-    GPIO_setConfig(GPIO_P15_D7, GPIO_CFG_INPUT | GPIO_CFG_IN_PD);
-
-    GPIO_write(GPIO_P01_RW, HIGH);
-    GPIO_write(GPIO_P62_RS, LOW);
-    GPIO_write(GPIO_P02_E, HIGH);
-
-    usleep(1);
-
-    busy_flag = GPIO_read(GPIO_P15_D7);
-
-    printf("%d\n", busy_flag);
-
-    while(busy_flag){
-
-    }
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////   Complementary Task ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-    GPIO_write(GPIO_P02_E, LOW);
-
-    usleep(1);
-
-    GPIO_write(GPIO_P01_RW, LOW); // RW = 0 , to enable write)
-
-    usleep(40);
-
-    GPIO_setConfig(GPIO_P15_D7, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
-}
 
 void LCD_init()
 {
 
-
-    GPIO_write(GPIO_P01_RW, 0); // Default set to logic-0 (low) since we are only going to write
-
-
-    usleep(40000); //delay at least 40 ms
-    GPIO_write(GPIO_P62_RS, 0); // RS = 0
-
-    GPIO_write(GPIO_P02_E, 0); // E = 0
-    usleep(1000);
-    GPIO_write(GPIO_P02_E, 1);
-    usleep(1000);
+    sleep(0.020);
+    GPIO_write(GPIO_P02_E, LOW); // E = 0
+    usleep(50);
 
 
     send_command(FUNCTION_SET); // Sets 8-bit mode, 2 lines, 5x8 matrix
-    usleep(42000); // delay at least 40 us
+    usleep(50); // delay at least 40 us
     send_command(FUNCTION_SET); // Sets 8-bit mode, 2 lines, 5x8 matrix
-    usleep(120); // delay at least 4 us
+    usleep(50); // delay at least 4 us
     send_command(FUNCTION_SET); // Sets 8-bit mode, 2 lines, 5x8 matrix
-    usleep(40); // delay at least 4 us
+    usleep(50); // delay at least 4 us
 
-    send_command(DCB_OFF); // Display OFF, Cursor OFF, Blink OFF
-    usleep(40); // wait 40 us
-    send_command(DCB_ON);
-    usleep(40); // wait 40 us
-    send_command(CLEAR_DISPLAY); // Clear Display
-    usleep(2000); // wait 1.53 ms
-    send_command(DCB_ON); // Display ON, Cursor ON, Blink ON
-    usleep(40); // wait 40 us
-    send_command(EMS_SHIFT); // Entry Mode Set with No Shift
-
-    usleep(10000);
-
-    enable();
-
-    GPIO_write(GPIO_P62_RS, 1);
+    send_command(DISPLAY_OFF); // Display OFF, Cursor OFF, Blink OFF
+    usleep(50); // wait 40 us
+    send_command(CLEAR_DISPLAY);
+    usleep(50); // wait 40 us
+    send_command(EMS); // Clear Display
+    usleep(50); // wait 1.53 ms
+    send_command(DISPLAY_ON); // Entry Mode Set with No Shift
+    usleep(50);
 }
 
-void write_char(unsigned char *byte)
+void enable()
 {
-    GPIO_write(GPIO_P62_RS, 1); // RS = 0
-    sleep(0.000000060); // delay of at least 60 ns
-    check_busy();
+    usleep(50);
+    GPIO_write(GPIO_P02_E, HIGH);
+    usleep(50);
+    GPIO_write(GPIO_P02_E, LOW);
+    usleep(50);
+}
 
-    while(*byte) // while byte[i] != \0
+
+void write_char(uint8_t chars[])
+{
+    volatile int i = 0;
+    GPIO_write(GPIO_P62_RS, HIGH); // RS = 1
+
+    while(chars[i] != 0) // while byte[i] != \0
     {
-
-        GPIO_write(GPIO_P15_D7, (*byte >> 7) & 0x01);
-        GPIO_write(GPIO_P55_D6, (*byte >> 6) & 0x01);
-        GPIO_write(GPIO_P21_D5, (*byte >> 5) & 0x01);
-        GPIO_write(GPIO_P06_D4, (*byte >> 4) & 0x01);
-        GPIO_write(GPIO_P07_D3, (*byte >> 3) & 0x01);
-        GPIO_write(GPIO_P45_D2, (*byte >> 2) & 0x01);
-        GPIO_write(GPIO_P08_D1, (*byte >> 1) & 0x01);
-        GPIO_write(GPIO_P18_D0, (*byte >> 0) & 0x01);
-
-        enable();
-
-        byte++;
+        write(chars[i]);
+        i++;
+        sleep(0.005);
     }
-
 }
 
 void send_command(uint8_t hex)
 {
-    check_busy();
+    GPIO_write(GPIO_P62_RS, LOW); // RS = 0
 
+    GPIO_write(GPIO_P15_D7, (1 & (hex >> 7)));
+    GPIO_write(GPIO_P55_D6, (1 & (hex >> 6)));
+    GPIO_write(GPIO_P21_D5, (1 & (hex >> 5)));
+    GPIO_write(GPIO_P06_D4, (1 & (hex >> 4)));
+    GPIO_write(GPIO_P07_D3, (1 & (hex >> 3)));
+    GPIO_write(GPIO_P45_D2, (1 & (hex >> 2)));
+    GPIO_write(GPIO_P08_D1, (1 & (hex >> 1)));
+    GPIO_write(GPIO_P18_D0, (1 & (hex >> 0)));
+    usleep(40); // delay at least 40 ns
+
+    enable();
+
+    usleep(40); // delay at least 25 ns
+}
+
+void write(uint8_t byte)
+{
     usleep(10000);  // delay at least 25 ns
 
-    GPIO_write(GPIO_P15_D7, (1 << 1) - 1 & (hex >> 7));
-    printf("%d", (1 & (hex >> 7)));
-
-    GPIO_write(GPIO_P55_D6, (1 & (hex >> 6)));
-    printf("%d", (1 & (hex >> 6)));
-
-    GPIO_write(GPIO_P21_D5, (1 & (hex >> 5)));
-    printf("%d", 1 & (hex >> 5));
-
-    GPIO_write(GPIO_P06_D4, (1 & (hex >> 4)));
-    printf("%d", 1 & (hex >> 4));
-
-    GPIO_write(GPIO_P07_D3, (1 & (hex >> 3)));
-    printf("%d", 1 & (hex >> 3));
-
-    GPIO_write(GPIO_P45_D2, (1 & (hex >> 2)));
-    printf("%d", 1 & (hex >> 2));
-
-    GPIO_write(GPIO_P08_D1, (1 & (hex >> 1)));
-    printf("%d", 1 & (hex >> 1));
-
-    GPIO_write(GPIO_P18_D0, (1 & (hex >> 0)));
-    printf("%d\n", 1 & (hex >> 0));
-
+    GPIO_write(GPIO_P15_D7, (1 & (byte >> 7)));
+    GPIO_write(GPIO_P55_D6, (1 & (byte >> 6)));
+    GPIO_write(GPIO_P21_D5, (1 & (byte >> 5)));
+    GPIO_write(GPIO_P06_D4, (1 & (byte >> 4)));
+    GPIO_write(GPIO_P07_D3, (1 & (byte >> 3)));
+    GPIO_write(GPIO_P45_D2, (1 & (byte >> 2)));
+    GPIO_write(GPIO_P08_D1, (1 & (byte >> 1)));
+    GPIO_write(GPIO_P18_D0, (1 & (byte >> 0)));
     usleep(40); // delay at least 40 ns
 
     enable();
