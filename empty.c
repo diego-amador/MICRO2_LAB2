@@ -41,13 +41,7 @@
 
 /* Driver Header files */
 #include <ti/drivers/GPIO.h>
-#include <ti/devices/cc32xx/driverlib/gpio.h>
-#include <ti/devices/cc32xx/inc/hw_types.h>
-#include <ti/devices/cc32xx/inc/hw_memmap.h>
-// #include <ti/drivers/I2C.h>
-// #include <ti/drivers/SPI.h>
-// #include <ti/drivers/UART.h>
-// #include <ti/drivers/Watchdog.h>
+
 
 /* Board Header file */
 #include "Board.h"
@@ -102,10 +96,10 @@ void *mainThread(void *arg0)
 {
     /* Call driver init functions */
     GPIO_init();
-    blink();
+//    blink();
 //    PushButton();
 //    LCD();
-//    ComplementaryTask();
+    ComplementaryTask();
 
 
     return 0;
@@ -142,7 +136,7 @@ void PushButton()
     while(1)
     {
 
-        while (GPIO_read(Board_GPIO_BUTTON0) == 0)
+        while (GPIO_read(Board_GPIO_BUTTON0) == 1)
         {
 
             GPIO_write(Board_GPIO_LED0, HIGH);
@@ -179,7 +173,7 @@ void LCD()
 void ComplementaryTask()
 {
 
-    const int size = 16;
+    const int size = 18;
     uint8_t arr[size][16] =
     {
      "Maria", "Marrero",
@@ -189,7 +183,8 @@ void ComplementaryTask()
      "ICOM", "4217",
      "CC3220S", "SimpleLink",
      "UPRM", "CAAM",
-     "Mayaguez", "Puerto Rico"
+     "Mayaguez", "Puerto Rico",
+     "Rio Piedras", "Bayamon"
     };
 
     uint8_t i = 0;
@@ -300,18 +295,18 @@ void PinConfig()
 {
     /* Configures the pins as output */
     /* Data Pins */
-    GPIO_setConfig(GPIO_P18_D0, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
-    GPIO_setConfig(GPIO_P08_D1, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
-    GPIO_setConfig(GPIO_P45_D2, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
-    GPIO_setConfig(GPIO_P07_D3, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
-    GPIO_setConfig(GPIO_P06_D4, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
-    GPIO_setConfig(GPIO_P21_D5, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
-    GPIO_setConfig(GPIO_P55_D6, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
-    GPIO_setConfig(GPIO_P15_D7, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
+    GPIO_setConfig(GPIO_P15_D0, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
+    GPIO_setConfig(GPIO_P50_D1, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
+    GPIO_setConfig(GPIO_P21_D2, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
+    GPIO_setConfig(GPIO_P06_D3, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
+    GPIO_setConfig(GPIO_P07_D4, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
+    GPIO_setConfig(GPIO_P61_D5, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
+    GPIO_setConfig(GPIO_P08_D6, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
+    GPIO_setConfig(GPIO_P18_D7, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
 
     /* Control Pins */
-    GPIO_setConfig(GPIO_P02_E, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
-    GPIO_setConfig(GPIO_P62_RS, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
+    GPIO_setConfig(GPIO_P64_E, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
+    GPIO_setConfig(GPIO_P63_RS, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
 
 }
 
@@ -324,7 +319,7 @@ void LCD_init()
 {
 
     sleep(0.020);
-    GPIO_write(GPIO_P02_E, LOW); // E = 0
+    GPIO_write(GPIO_P64_E, LOW); // E = 0
     usleep(50);
 
 
@@ -348,9 +343,9 @@ void LCD_init()
 void enable()
 {
     usleep(50);
-    GPIO_write(GPIO_P02_E, HIGH);
+    GPIO_write(GPIO_P64_E, HIGH);
     usleep(50);
-    GPIO_write(GPIO_P02_E, LOW);
+    GPIO_write(GPIO_P64_E, LOW);
     usleep(50);
 }
 
@@ -358,28 +353,28 @@ void enable()
 void write_char(uint8_t chars[])
 {
     volatile int i = 0;
-    GPIO_write(GPIO_P62_RS, HIGH); // RS = 1
+    GPIO_write(GPIO_P63_RS, HIGH); // RS = 1
 
     while(chars[i] != 0) // while byte[i] != \0
     {
         write(chars[i]);
         i++;
-        sleep(0.005);
+        sleep(0.0001);
     }
 }
 
 void send_command(uint8_t hex)
 {
-    GPIO_write(GPIO_P62_RS, LOW); // RS = 0
+    GPIO_write(GPIO_P63_RS, LOW); // RS = 0
 
-    GPIO_write(GPIO_P15_D7, (1 & (hex >> 7)));
-    GPIO_write(GPIO_P55_D6, (1 & (hex >> 6)));
-    GPIO_write(GPIO_P21_D5, (1 & (hex >> 5)));
-    GPIO_write(GPIO_P06_D4, (1 & (hex >> 4)));
-    GPIO_write(GPIO_P07_D3, (1 & (hex >> 3)));
-    GPIO_write(GPIO_P45_D2, (1 & (hex >> 2)));
-    GPIO_write(GPIO_P08_D1, (1 & (hex >> 1)));
-    GPIO_write(GPIO_P18_D0, (1 & (hex >> 0)));
+    GPIO_write(GPIO_P18_D7, (1 & (hex >> 7)));
+    GPIO_write(GPIO_P08_D6, (1 & (hex >> 6)));
+    GPIO_write(GPIO_P61_D5, (1 & (hex >> 5)));
+    GPIO_write(GPIO_P07_D4, (1 & (hex >> 4)));
+    GPIO_write(GPIO_P06_D3, (1 & (hex >> 3)));
+    GPIO_write(GPIO_P21_D2, (1 & (hex >> 2)));
+    GPIO_write(GPIO_P50_D1, (1 & (hex >> 1)));
+    GPIO_write(GPIO_P15_D0, (1 & (hex >> 0)));
     usleep(40); // delay at least 40 ns
 
     enable();
@@ -391,14 +386,14 @@ void write(uint8_t byte)
 {
     usleep(10000);  // delay at least 25 ns
 
-    GPIO_write(GPIO_P15_D7, (1 & (byte >> 7)));
-    GPIO_write(GPIO_P55_D6, (1 & (byte >> 6)));
-    GPIO_write(GPIO_P21_D5, (1 & (byte >> 5)));
-    GPIO_write(GPIO_P06_D4, (1 & (byte >> 4)));
-    GPIO_write(GPIO_P07_D3, (1 & (byte >> 3)));
-    GPIO_write(GPIO_P45_D2, (1 & (byte >> 2)));
-    GPIO_write(GPIO_P08_D1, (1 & (byte >> 1)));
-    GPIO_write(GPIO_P18_D0, (1 & (byte >> 0)));
+    GPIO_write(GPIO_P18_D7, (1 & (byte >> 7)));
+    GPIO_write(GPIO_P08_D6, (1 & (byte >> 6)));
+    GPIO_write(GPIO_P61_D5, (1 & (byte >> 5)));
+    GPIO_write(GPIO_P07_D4, (1 & (byte >> 4)));
+    GPIO_write(GPIO_P06_D3, (1 & (byte >> 3)));
+    GPIO_write(GPIO_P21_D2, (1 & (byte >> 2)));
+    GPIO_write(GPIO_P50_D1, (1 & (byte >> 1)));
+    GPIO_write(GPIO_P15_D0, (1 & (byte >> 0)));
     usleep(40); // delay at least 40 ns
 
     enable();

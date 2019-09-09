@@ -19,9 +19,6 @@ empty.obj: C:/ti/ccs910/ccs/tools/compiler/ti-cgt-arm_18.12.3.LTS/include/../inc
 empty.obj: C:/ti/ccs910/ccs/tools/compiler/ti-cgt-arm_18.12.3.LTS/include/abi_prefix.h
 empty.obj: C:/ti/ccs910/ccs/tools/compiler/ti-cgt-arm_18.12.3.LTS/include/xlocale/_time.h
 empty.obj: C:/ti/simplelink_cc32xx_sdk_3_20_00_06/source/ti/drivers/GPIO.h
-empty.obj: C:/ti/simplelink_cc32xx_sdk_3_20_00_06/source/ti/devices/cc32xx/driverlib/gpio.h
-empty.obj: C:/ti/simplelink_cc32xx_sdk_3_20_00_06/source/ti/devices/cc32xx/inc/hw_types.h
-empty.obj: C:/ti/simplelink_cc32xx_sdk_3_20_00_06/source/ti/devices/cc32xx/inc/hw_memmap.h
 empty.obj: ../Board.h
 empty.obj: C:/ti/simplelink_cc32xx_sdk_3_20_00_06/source/ti/drivers/Board.h
 empty.obj: ../CC3220S_LAUNCHXL.h
@@ -45,9 +42,6 @@ C:/ti/ccs910/ccs/tools/compiler/ti-cgt-arm_18.12.3.LTS/include/../include/time.h
 C:/ti/ccs910/ccs/tools/compiler/ti-cgt-arm_18.12.3.LTS/include/abi_prefix.h: 
 C:/ti/ccs910/ccs/tools/compiler/ti-cgt-arm_18.12.3.LTS/include/xlocale/_time.h: 
 C:/ti/simplelink_cc32xx_sdk_3_20_00_06/source/ti/drivers/GPIO.h: 
-C:/ti/simplelink_cc32xx_sdk_3_20_00_06/source/ti/devices/cc32xx/driverlib/gpio.h: 
-C:/ti/simplelink_cc32xx_sdk_3_20_00_06/source/ti/devices/cc32xx/inc/hw_types.h: 
-C:/ti/simplelink_cc32xx_sdk_3_20_00_06/source/ti/devices/cc32xx/inc/hw_memmap.h: 
 ../Board.h: 
 C:/ti/simplelink_cc32xx_sdk_3_20_00_06/source/ti/drivers/Board.h: 
 ../CC3220S_LAUNCHXL.h: 
