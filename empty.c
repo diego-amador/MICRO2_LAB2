@@ -102,10 +102,10 @@ void *mainThread(void *arg0)
 {
     /* Call driver init functions */
     GPIO_init();
-//    blink();
+    blink();
 //    PushButton();
 //    LCD();
-    ComplementaryTask();
+//    ComplementaryTask();
 
 
     return 0;
@@ -142,7 +142,7 @@ void PushButton()
     while(1)
     {
 
-        while (GPIO_read(Board_GPIO_BUTTON1) == 0)
+        while (GPIO_read(Board_GPIO_BUTTON0) == 0)
         {
 
             GPIO_write(Board_GPIO_LED0, HIGH);
@@ -162,7 +162,7 @@ void LCD()
     PinConfig();
     LCD_init();
 
-    write_char("FUCK THIS");
+    write_char("ICOM 4217");
 
     usleep(50);
     send_command(HOME);
@@ -170,7 +170,7 @@ void LCD()
     send_command(SET_CURSOR | C_2LINE);
     usleep(50);
 
-    write_char("Christian Diego");
+    write_char("Dame la A");
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
