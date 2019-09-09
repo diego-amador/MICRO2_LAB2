@@ -73,15 +73,26 @@
 #define LOW (0)
 #define HIGH (1)
 
-
+/* Laboratory Tasks */
 void blink();
 void PushButton();
 void LCD();
+void ComplementaryTask();
+
+/* Toggles Enable in LCD */
 void enable();
+/* Initializes LCD */
 void LCD_init();
 void write_char(uint8_t chars[]);
 void send_command(uint8_t hex);
 void write(uint8_t byte);
+
+int buttonUpCallbackFxn(uint8_t index, uint8_t size);
+int buttonDownCallbackFxn(uint8_t index, uint8_t size);
+
+void printToLCD(uint8_t text[], int toggle);
+
+/*  */
 void PinConfig();
 
 /*
@@ -91,17 +102,10 @@ void *mainThread(void *arg0)
 {
     /* Call driver init functions */
     GPIO_init();
-    GPIO_setConfig(Board_GPIO_BUTTON1, GPIO_CFG_IN_PD | GPIO_CFG_IN_INT_RISING);
-
-    while(1)
-    {
-        volatile int pressed;
-        pressed = GPIO_read(Board_GPIO_BUTTON1);
-        printf("%d\n", pressed);
-    }
 //    blink();
 //    PushButton();
 //    LCD();
+    ComplementaryTask();
 
 
     return 0;
@@ -138,7 +142,7 @@ void PushButton()
     while(1)
     {
 
-        while (GPIO_read(Board_GPIO_BUTTON0) == 0)
+        while (GPIO_read(Board_GPIO_BUTTON1) == 0)
         {
 
             GPIO_write(Board_GPIO_LED0, HIGH);
@@ -169,6 +173,127 @@ void LCD()
     write_char("Christian Diego");
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////   Lab#2: Complementary Task ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+void ComplementaryTask()
+{
+
+    const int size = 16;
+    uint8_t arr[size][16] =
+    {
+     "Maria", "Marrero",
+     "Yamil", "Gonzalez",
+     "Diego", "Amador",
+     "Christian", "Santiago",
+     "ICOM", "4217",
+     "CC3220S", "SimpleLink",
+     "UPRM", "CAAM",
+     "Mayaguez", "Puerto Rico"
+    };
+
+    uint8_t i = 0;
+
+
+    PinConfig();
+    LCD_init();
+
+    // Configures Board GPIOs as Input
+    GPIO_setConfig(Board_GPIO_BUTTON0, GPIO_CFG_INPUT | GPIO_CFG_IN_PU | GPIO_CFG_IN_INT_FALLING);
+    GPIO_setConfig(Board_GPIO_BUTTON1, GPIO_CFG_INPUT | GPIO_CFG_IN_PD | GPIO_CFG_IN_INT_FALLING);
+
+    write_char(arr[i]);
+    usleep(50);
+    send_command(HOME);
+    usleep(50);
+    send_command(SET_CURSOR | C_2LINE);
+    usleep(50);
+
+    write_char(arr[i+1]);
+
+    while(1){
+
+        usleep(50);
+        send_command(HOME);
+        usleep(50);
+
+
+        if (GPIO_read(Board_GPIO_BUTTON1) == 1)
+        {
+            LCD_init();
+
+            int oldpos = i;
+            i = buttonUpCallbackFxn(i, size);
+
+            write_char(arr[i]);
+            usleep(50);
+            send_command(HOME);
+            usleep(50);
+            send_command(SET_CURSOR | C_2LINE);
+            usleep(50);
+
+            if (i == size-1)
+            {
+                write_char(arr[0]);
+            }else
+            {
+                write_char(arr[i+1]);
+            }
+
+        }
+        if (GPIO_read(Board_GPIO_BUTTON0) == 0)
+        {
+            LCD_init();
+
+            int oldpos = i;
+
+            i = buttonDownCallbackFxn(i, size);
+
+            write_char(arr[i]);
+
+            send_command(HOME);
+            usleep(50);
+            send_command(SET_CURSOR | C_2LINE);
+            usleep(50);
+
+            write_char(arr[oldpos]);
+
+//            i = buttonDownCallbackFxn(i
+        }
+    }
+
+
+
+
+
+}
+
+int buttonUpCallbackFxn(uint8_t index, uint8_t size)
+{
+
+    if (index==(size-1))
+    {
+        return 0;
+    }
+    else
+    {
+        return index+1;
+    }
+}
+
+
+int buttonDownCallbackFxn(uint8_t index, uint8_t size)
+{
+
+    if (index<=0){
+        return size-1;
+    }
+    else
+    {
+        return index-1;
+    }
+
+}
 
 
 void PinConfig()
