@@ -13,6 +13,7 @@ GEN_CMDS__FLAG := -l"C:/Users/csant/EmbeddedWrkspace/tirtos_builds_CC3220S_LAUNC
 
 ORDERED_OBJS += \
 "./CC3220S_LAUNCHXL.obj" \
+"./PEMS_LCD.obj" \
 "./empty.obj" \
 "./lab3.obj" \
 "./main_tirtos.obj" \
@@ -171,8 +172,8 @@ empty_CC3220S_LAUNCHXL_tirtos_ccs.bin: $(EXE_OUTPUTS)
 # Other Targets
 clean:
 	-$(RM) $(BIN_OUTPUTS__QUOTED)$(EXE_OUTPUTS__QUOTED)
-	-$(RM) "CC3220S_LAUNCHXL.obj" "empty.obj" "lab3.obj" "main_tirtos.obj" 
-	-$(RM) "CC3220S_LAUNCHXL.d" "empty.d" "lab3.d" "main_tirtos.d" 
+	-$(RM) "CC3220S_LAUNCHXL.obj" "PEMS_LCD.obj" "empty.obj" "lab3.obj" "main_tirtos.obj" 
+	-$(RM) "CC3220S_LAUNCHXL.d" "PEMS_LCD.d" "empty.d" "lab3.d" "main_tirtos.d" 
 	-@echo 'Finished clean'
 	-@echo ' '
 

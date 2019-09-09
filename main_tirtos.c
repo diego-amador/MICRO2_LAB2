@@ -45,7 +45,7 @@
 /* Example/Board Header files */
 #include <ti/drivers/Board.h>
 
-extern void *mainThread(void *arg0);
+extern void *lab2Thread(void *arg0);
 
 /* Stack size in bytes */
 #define THREADSTACKSIZE    1024
@@ -76,7 +76,9 @@ int main(void)
         while (1) {}
     }
 
-    retc = pthread_create(&thread, &attrs, mainThread, NULL);
+
+    retc = pthread_create(&thread, &attrs, lab2Thread, NULL);
+//    retc = pthread_create(&thread, &attrs, la1b3Thread, NULL);
     if (retc != 0) {
         /* pthread_create() failed */
         while (1) {}
